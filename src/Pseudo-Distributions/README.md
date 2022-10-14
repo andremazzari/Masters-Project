@@ -1,1 +1,3 @@
-The aim of this program is to find a probability distribution for 
+The aim of this program is to try to find a joint probability distribution for the results of all measurements involved in an Extended Bell Nonlocality experiment. This was done using **Linear Programming** with the library **CVXPY** for Python.
+
+The experiment makes use of a family of quantum states and quantum measurements. If the probabilities predicted by the quantum experiment could not be reproduced by a classical model, then it is not possible to find such joint probability distribution, but only a pseudo probability distribution, with some of the entries being negative. Hence, with this program is possible to certify if some non-classical behaviour is expected to be observed in a Bell experiment.
