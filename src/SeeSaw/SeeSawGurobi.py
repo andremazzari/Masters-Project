@@ -287,7 +287,7 @@ def AliceOptimizationStep_Gurobi(A, B, NA, NB, Nc, rho, inequality, indexes_A, E
         if indexes_A['a' + str(Index)] == 0:
             continue
 
-        #Get G such that the optimization term in the inequaloty can be written as Tr(G @ P) 
+        #Get G such that the optimization term in the inequality can be written as Tr(G @ P) 
         G = InequalityCoefficientTerm(A, B, NA, NB, Nc, rho, 'A', Index, inequality)
 
         InequalityOp = qp.InequalityOperator(A, B, NA, NB, inequality)
@@ -320,7 +320,7 @@ Input:
     - Nc: Number of observables in Bob's cycle.
     - rho: density operator.
     - inequality: Bell inequality that is being optimized.
-    - indexes_A: indexes of Alice's measurements that appear in the inequality.
+    - indexes_B: indexes of Bob's measurements that appear in the inequality.
 '''
 def BobOptimizationStep_Gurobi(A, B, NA, NB, Nc, rho, inequality, indexes_B, ErrorMessage = False):
     #Get +1 projectors of Bob's initial observables. 

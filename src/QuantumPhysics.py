@@ -42,7 +42,7 @@ def DrawEigenValue(N):
     #1 -> 1
     return np.random.randint(2, size = N)
 
-'''DrawEigenValue
+'''DrawInitialNCycle
 Description: Draw Nc dichotomic observables with the compatibility relations of a Nc-Cycle
 Input:
     N: dimension of the space.
@@ -70,6 +70,36 @@ def DrawInitialNCycle(N,V,Nc):
             TempState /= np.linalg.norm(TempState)
             rays[index + 1] = rays[index + 1] - np.inner(np.conjugate(TempState), rays[index + 1])*TempState
             rays[index + 1] /= np.linalg.norm(rays[index + 1])
+    
+    for i in range(Nc):
+        P[i] = np.outer(rays[i], rays[i])
+        if V[i] == 1:#Projetor com autovalor 1
+            O[i] = 2*P[i] - np.eye(N)
+        elif V[i] == 0:#Projetor com autovalor -1
+            O[i] = np.eye(N) - 2*P[i]
+    
+    return O, P
+
+'''DrawInitialNChord
+Description: Draw Nc dichotomic observables with the compatibility relations of a N-chord
+Input:
+    N: dimension of the space.
+    V: Nc-dimensional array. If V[i]==1, the projector P[i] raffled to observable i corresponds to eigenvalue 1; if V[i]==0, the projector corresponds to eigenvalue -1. (DrawEigenValue).
+    Nc: number of observables in the chord
+Output:
+    O: Nc-dimensional array with the observables.
+    P: Nc-dimensional array with the projectors.
+'''
+def DrawInitialNChord(N,V,Nc):
+    P = np.empty((Nc,N,N), complex)
+    O = np.empty((Nc,N,N), complex)
+    rays = []
+    Zaxis = np.zeros(N)
+    Zaxis[N-1] = 1
+    rays.append(DrawRealState(N))
+    for index in range(1, Nc):
+        R = RotationMatrix(rays[index - 1], Zaxis, N)
+        rays.append(np.transpose(R) @ np.append(DrawRealState(N-1),0))
     
     for i in range(Nc):
         P[i] = np.outer(rays[i], rays[i])
@@ -245,6 +275,17 @@ def PrintCommutationRelations(O, Nc):
     for i in range(Nc - 1):
         for j in range(i + 1, Nc):
             print(i,j,np.amax(abs(O[i]@O[j] - O[j]@O[i])))
+
+'''PrintCommutationRelationsProjectors
+Description: Print the commutation Relations of a set of projectors. Considers only the result 0 of the measurements
+Input:
+    O: set of proejctors
+    Nc: number of observables
+'''
+def PrintCommutationRelationsProjectors(P, Nc):
+    for i in range(Nc - 1):
+        for j in range(i + 1, Nc):
+            print(i,j,np.amax(abs(P[i,0]@P[j,0] - P[j,0]@P[i,0])))
 
 '''VerifyObservables2Cycle
 Description: Verify observables in a scenario where Alice has 2 incompatible observables and Bob has a N-Cycle
@@ -454,8 +495,27 @@ def Density_Operator(Psi):
 
 '''BELL NONLOCALITY'''
 
+
 '''InequalityOperator
-Description: Calculates bi-partite inequality operator
+Description: calls function to build inequality operator, depending on the representation
+Input:
+    OA: Alice's operators.
+    OB: Bob's operators.
+    NA: Alice's dimension.
+    NB: Bob's dimension.
+    inequality: Bi-partite Bell inequality, PANDA standart.
+    representation: 'correlator' or 'probability'.
+Output:
+    Returns inequality operator
+'''
+def InequalityOperator(OA, OB, NA, NB, inequality, representation = 'correlator'):
+    if representation == 'correlator':
+        return InequalityOperatorCorr(OA, OB, NA, NB, inequality)
+    elif representation == 'probability':
+        return InequalityOperatorProb(OA, OB, NA, NB, inequality)
+
+'''InequalityOperatorCorr
+Description: Calculates bi-partite inequality operator in correlator representation
 Input:
     A: Alice's observables.
     B: Bob's observables.
@@ -465,7 +525,7 @@ Input:
 Output:
     Returns inequality operator
 '''
-def InequalityOperator(A, B, NA, NB, inequality):
+def InequalityOperatorCorr(A, B, NA, NB, inequality):
     lhs = inequality.split('<')[0].strip()
     
     obj = 0
@@ -499,11 +559,54 @@ def InequalityOperator(A, B, NA, NB, inequality):
     
     return obj
 
+'''InequalityOperatorProb
+Description: Calculates bi-partite inequality operator in probability representation
+Input:
+    PA: Alice's projectors.
+    PB: Bob's projectors.
+    NA: Alice's dimension.
+    NB: Bob's dimension.
+    inequality: Bi-partite Bell inequality, terms in the format p001|A0B0B1, for instance.
+Output:
+    Returns inequality operator
+'''
+def InequalityOperatorProb(PA, PB, NA, NB, inequality):
+    lhs = inequality.split('<')[0].strip()
+    
+    obj = 0
+    for termstr in lhs.split(' '):
+        termA = np.eye(NA) #Variavel onde sera montado um termo de Alice da desigualdade
+        termB = np.eye(NB) #Variavel onde sera montado um termo de Bob da desigualdade
+        
+        coefficient, info = termstr.split("p")
+            
+        if coefficient == '-':
+            coefficient = -1
+        elif coefficient == '+' or coefficient == '':
+            coefficient = 1
+        else:
+            coefficient = int(coefficient)
+
+        results, measurements = info.split("|")
+            
+        #Monta um termo da desigualdade
+        measurements = [measurements[i:i+2] for i in range(0, len(measurements), 2)]
+        index = 0
+        for measurement in measurements:
+            if measurement[0].lower() == 'a':
+                termA = termA @ PA[int(measurement[1]), int(results[index])]
+            elif measurement[0].lower() == 'b':
+                termB = termB @ PB[int(measurement[1]), int(results[index])]
+            index += 1
+        obj += coefficient*(np.kron(termA, termB))
+    
+    return obj
+
 '''GetMeasurements
 Description: Receives a correlator and returns the individual measurements. All measurements must be a letter (lower or upper case) followed by a number.
 Uses ascii code to identify the elements of the string.
 Input: 
-    term: scorrelator term (string)
+    term: correlator term (string)
 Output: array with individual measurements in terms.
 '''
 def GetMeasurements(term):
@@ -521,7 +624,17 @@ def GetMeasurements(term):
     return np.array(measurements)
 
 '''GetMeasurementsInInequality
+Description: calls function to get the measurements in ienquality, depending on the representation
+'''
+def GetMeasurementsInInequality(inequality, ma, mb, representation = 'correlator'):
+    if representation == 'correlator':
+        return GetMeasurementsInInequality_Corr(inequality, ma, mb)
+    elif representation == 'probability':
+        return GetMeasurementsInInequality_Prob(inequality, ma, mb)
+
+'''GetMeasurementsInInequality_Corr
 Description: return the indexes of the measurements that appear in a bipartite Bell inequality. Assumes that the measurements are indexes from 0 to (m - 1), where m is the number of measurement settings of a party.
+Correlator representation
 Input:
     inequality: string of Bell inequality in the form B <= b.
     ma: Number of Alice's measurements.
@@ -529,7 +642,7 @@ Input:
 Output:
     Dictionaries indexes_A and indexes_B, where the keys are the measurements, and the value is set to 1 if the measurement appears in the inequality, 0 otherwise.
 '''
-def GetMeasurementsInInequality(inequality, ma, mb):
+def GetMeasurementsInInequality_Corr(inequality, ma, mb):
     lhs = inequality.split('<')[0].strip()
     
     indexes_A = {}
@@ -556,17 +669,50 @@ def GetMeasurementsInInequality(inequality, ma, mb):
                 indexes_B[measurement] = 1
     return indexes_A, indexes_B
 
+'''GetMeasurementsInInequality_Prob
+Description: return the indexes of the measurements that appear in a bipartite Bell inequality. Assumes that the measurements are indexes from 0 to (m - 1), where m is the number of measurement settings of a party.
+probability representation
+Input:
+    inequality: string of Bell inequality in the form B <= b.
+    ma: Number of Alice's measurements.
+    mb: Number of Bob's measurements.
+Output:
+    Dictionaries indexes_A and indexes_B, where the keys are the measurements, and the value is set to 1 if the measurement appears in the inequality, 0 otherwise.
+'''
+def GetMeasurementsInInequality_Prob(inequality, ma, mb):
+    lhs = inequality.split('<')[0].strip()
+    
+    indexes_A = {}
+    indexes_B = {}
+    for ia in range(ma):
+        indexes_A['A' + str(ia)] = 0
+    for ib in range(mb):
+        indexes_B['B' + str(ib)] = 0
+    
+    for term in lhs.split(' '):
+        coefficient, info = term.split("p")
+
+        results, measurements = info.split("|")
+
+        measurements = GetMeasurements(term)
+        for measurement in measurements:
+            if measurement[0].lower() == 'a':
+                indexes_A[measurement] = 1
+            elif measurement[0].lower() == 'b':
+                indexes_B[measurement] = 1
+    return indexes_A, indexes_B
+
 '''MaxRho
 Description: Get to desnity operator with gives the maximum violation for a bi-partite Bell inequality.
 Input:
-    A: Alice's observables
-    B: Bob's observables
+    A: Alice's operators
+    B: Bob's operators
     NA: dimension of Alice's system.
     NB: dimension of Bob's system.
     inequality: Bell inequality, PANDA standart.
 '''
-def MaxRho(A,B,NA,NB, inequality, threshold = 1e-4):
-    OpIneq = InequalityOperator(A, B, NA, NB, inequality)
+def MaxRho(A,B,NA,NB, inequality, threshold = 1e-4, representation = 'correlator'):
+    OpIneq = InequalityOperator(A, B, NA, NB, inequality, representation = representation)
     MaxEntryHermitian = IsHermitian(OpIneq, code = 1)
     if abs(MaxEntryHermitian) > threshold:
         print("Error MaxRho: OpIneq not hermitian, ", MaxEntryHermitian)

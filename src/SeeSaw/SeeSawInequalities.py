@@ -56,7 +56,14 @@ def SeeSawOptimization_Gurobi(A, B, NA, NB, Nc, inequality, indexes_A, indexes_B
     return A, B
 
 '''SeeSawSpecificInequality_Gurobi
-Description: See Saw Optimization using Gurobi for a bell inequality in a scenario where Alice has 2 incompatible observables and Bob has a Nc-cycle.
+Description: calls function to perform See Saw of a given inequality, depending on the representation.
+'''
+def SeeSawSpecificInequality_Gurobi(NA, NB, Nc, inequality, NPAValue = None, MaxValue = None, Amax = None, BMax = None, trials = 100, Rafflingtrials = 1, Interactions = 100, limit = 1e-5, representation = 'correlator'):
+    if representation == 'correlator':
+        return SeeSawSpecificInequality_Gurobi_Corr(NA, NB, Nc, inequality, NPAValue, MaxValue, Amax, BMax, trials, Rafflingtrials, Interactions, limit)
+
+'''SeeSawSpecificInequality_Gurobi_Corr
+Description: See Saw Optimization using Gurobi for a bell inequality in a scenario where Alice has 2 incompatible observables and Bob has a Nc-cycle, correlator representation
 Input:
     NA: dimension of Alice's system.
     NB: dimension of Bob's system.
@@ -74,7 +81,7 @@ Output:
     Amax: Alice's observables after Algebraic See Saw.
     BMax: Bob's observables after Algebraic See Saw.
 '''
-def SeeSawSpecificInequality_Gurobi(NA, NB, Nc, inequality, NPAValue = None, MaxValue = None, Amax = None, BMax = None, trials = 100, Rafflingtrials = 1, Interactions = 100, limit = 1e-5):
+def SeeSawSpecificInequality_Gurobi_Corr(NA, NB, Nc, inequality, NPAValue = None, MaxValue = None, Amax = None, BMax = None, trials = 100, Rafflingtrials = 1, Interactions = 100, limit = 1e-5):
     #Get indexes of the measurements that appear in the inequality
     Indexes_A, Indexes_B = qp.GetMeasurementsInInequality(inequality, 2, Nc)
     

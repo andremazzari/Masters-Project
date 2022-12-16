@@ -14,7 +14,7 @@ def Test_CHSH_63():
     Nc = 5 #Number of obervables in Bob's N-Cycle.
     inequality = 'a0b0b1 +a0b2b3 +a1b0b1 -a1b2b3 <= 2'
     NPAValue = 2*np.sqrt(2) #If the See Saw algorithm reaches the NPA value, it stops. Optional parameter, default is NPAValue = None.
-    trials = 10 #number of initial conditions in See Saw algorithm (optional).
+    trials = 5 #number of initial conditions in See Saw algorithm (optional).
     Interactions = 20 #maximum number of interactions in See Saw proccess (for each initial condition) (optional).
 
     Value, A, B = SeeSawInequalities.SeeSawSpecificInequality_Gurobi(NA, NB, Nc, inequality, NPAValue = NPAValue, trials = trials, Interactions = Interactions)
@@ -51,4 +51,4 @@ def Test_CHSH_63_State_Combination():
     print("Minimum w found: ", w_minimum)
 
 
-Test_CHSH_63_State_Combination()
+Test_CHSH_63()
