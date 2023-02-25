@@ -2,7 +2,7 @@ This folder contain the directories with the facets and vertices of the polytope
 
 Description of the scenarios:
 
-- *2-pentagon*: Alice and Bob have measurements $\mathcal{M}_{A} = \\{ A_0, A_1 \\}$ and $\mathcal{M}_{B} = \\{ B_0, B_1, B_2, B_3, B_4 \\}$, respectively. Alice's measurements are incompatible, while Bob's measurements satisfy the compatibility relations of a 5-cycle $\mathcal{C}_{B} = \\{ \\{ B_0, B_1 \\}, \\{ B_1, B_2 \\}, \\{ B_2, B_3 \\}, \\{ B_3, B_4 \\}, \\{ B_4, B_0 \\} \\}$. Each measurement has two possible results.
+- *2-pentagon*: Alice and Bob have measurements $\mathcal{M}_A = \\{ A_0, A_1 \\}$ and $\mathcal{M}_{B} = \\{ B_0, B_1, B_2, B_3, B_4 \\}$, respectively. Alice's measurements are incompatible, while Bob's measurements satisfy the compatibility relations of a 5-cycle $\mathcal{C}_{B} = \\{ \\{ B_0, B_1 \\}, \\{ B_1, B_2 \\}, \\{ B_2, B_3 \\}, \\{ B_3, B_4 \\}, \\{ B_4, B_0 \\} \\}$. Each measurement has two possible results.
 
 - *2-square*: Alice and Bob have measurements $\mathcal{M}_{A} = \\{ A_0, A_1 \\}$ and $\mathcal{M}_{B} = \\{ B_0, B_1, B_2, B_3\\}$, respectively. Alice's measurements are incompatible, while Bob's measurements satisfy the compatibility relations of a 4-cycle $\mathcal{C}_{B} = \\{ \\{ B_0, B_1 \\}, \\{ B_1, B_2 \\}, \\{ B_2, B_3 \\}, \\{ B_3, B_0 \\} \\}$. Each measurement has two possible results.
 
